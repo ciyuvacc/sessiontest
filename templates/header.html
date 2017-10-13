@@ -6,16 +6,16 @@
             </div>
         </div>
         <ul class='nav navbar-nav'>
-            <li ><a href='/index'>Home</a></li>
+            <li ><a href='/'>Home</a></li>
             {% if username %}
+            <li ><a href='/userinfo'>个人资料(仅form)</a></li>
+            <li ><a href='/post'>写日记(仅form)</a></li>
+            <li ><a href='/contact'>联系管理员(form)</a></li>
             <li ><a href='/logout'>注销</a></li>
-            <li ><a href='/post'>张贴信息(仅form)</a></li>
-            <li ><a href='/post2db'>张贴信息(modelform)</a></li>
-            <li><a href='/admin'>后台管理</a></li>
             {% else %}
             <li ><a href='/login'>登陆</a></li>
-            <li ><a href='/contact'>联系管理员(form)</a></li>
             {% endif %}
+            <li ><a href='/admin'>后台管理(form)</a></li>
         </ul>
     </div>
 </nav>

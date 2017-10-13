@@ -3,19 +3,35 @@ from django.template.loader import get_template
 from django.template import RequestContext
 from django.http import HttpResponse,HttpResponseRedirect
 from mysite import models,forms
+from django.contrib import messages
+#messages.add_message(request,message.INFO,'heheheheh')
+#messages.get_messages(request)
+
 
 def index(request,pid=None,del_pass=None):
-    if 'username' in request.COOKIES and 'usercolor' in request.COOKIES:
-        username = request.COOKIES['username']
-        usercolor = request.COOKIES['usercolor']
-    template = get_template('index.html')
-    request_context = RequestContext(request)
-    request_context.push(locals())
-     
-    html = template.render(request_context)
+    if 'username' in request.session:
+        username = request.session['username']
+        useremail = request.session['useremail']
 
+    template = get_template('index.html')
+    html = template.render(locals())
     return HttpResponse(html)
 
+
+def userinfo(request):
+    if 'username' in request.session:
+        username = request.session['username']
+    else:
+        return HttpResponseRedirect('/login/')
+
+    try:
+        userinfo = models.User.objects.get(name=username)
+    except:
+        pass
+
+    template = get_template('userinfo.html')
+    html = template.render(locals())
+    return HttpResponse(html)
 
 def listing(request):
     template = get_template('listing.html')
@@ -97,32 +113,39 @@ def login(request):
     if request.method == 'POST':
         login_form = forms.LoginForm(request.POST)
         if login_form.is_valid():
-            username = request.POST['user_name']          
-            usercolor = request.POST['user_color']
-            message = '登陆成功'
+            login_name = request.POST['username'].strip()          
+            login_password = request.POST['password']
+            print login_name,login_password
+            try:
+                user = models.User.objects.get(name=login_name)
+                if user.password == login_password:
+                    request.session['username'] = user.name
+                    request.session['useremail'] = user.email
+                    messages.add_message(request,messages.SUCCESS,'成功登录了')
+                    return  HttpResponseRedirect('/')
+                else:
+                    messages.add_message(request,messages.WARNING,'密码错误,请检查一次')
+                    #message = '密码错误,请检查一次!'
+            except:
+                 messages.add_message(request,messages.WARNING,'找不到用户')
+                # message = '目前无法登陆'
         else:
-            message = "请检查字段输入内容"
+            messages.add_message(request,messages.INFO,'请检查字段输入内容')
+           # message = "请检查字段输入内容"
     else:
         login_form = forms.LoginForm()
-    template = get_template('login.html')
 
+    template = get_template('login.html')
     request_context = RequestContext(request)
     request_context.push(locals())    
 
     html = template.render(request_context)
     response = HttpResponse(html)
-
-
-    try:
-        if username: response.set_cookie('username',username)
-        if usercolor: response.set_cookie('usercolor',usercolor)
-    except:
-        pass
     return response
     
 def logout(request):
+    request.session['username']= ""
     response = HttpResponseRedirect('/')
-    response.delete_cookie('username')
     return response
      
 
