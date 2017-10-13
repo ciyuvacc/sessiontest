@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %} {{ product.nicename | default:"找不到指定的手机" }}{% endblock %}
+{% block content %}
+<div class='container' align=center>
+{% if product %}
+<table>
+     <tr><td align=center><h3> {{product.nicename}}</td></tr>
+     <tr><td align=center><h3> {{product.description}}</he></td></tr>
+     <tr><td align=center><h3> 公元{{product.year}}年出厂</td></tr>
+     <tr><td align=center><h3> 价格: NT${{product.price}}元</td></tr>
+{% for i in images %}
+    {% if forloop.first %}
+     <tr><td align=center>
+    {% endif %}
+    <img src='{{ i.url }}' width=350><br>
+{% if forloop.last %}
+</td></tr>
+{% endif %}
+
+{% empty %}
+<tr><td align=center> 暂无图像</td></tr>
+{% endfor %}
+</table>
+{% else %}
+<h2> 找不到指定的手机 </h2>
+{% endif %}
+
+</div>
+{% endblock %}

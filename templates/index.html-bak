@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %} 我有话说{% endblock %}
+{% block content %}
+<div class='container' align=left>
+
+<form name='my form' action='/' method='GET'>
+
+<label for='byear'>出生年份</label>   
+<select name='byear'>
+    {% for year in years %}
+    <option value='{{ year }}'>{{ year }}</option>
+    {% endfor %}
+</select><br>
+
+喜欢的颜色(可复选):
+    <input type='checkbox' name='fcolor' value='Green'>Green
+    <input type='checkbox' name='fcolor' value='Red'>Red
+    <input type='checkbox' name='fcolor' value='Blue'>Blue
+    <input type='checkbox' name='fcolor' value='Yellow'>Yellow
+    <input type='checkbox' name='fcolor' value='Orange'>Orange<br/>
+
+
+
+<ul align=left>
+    <label for='user_id'>Your ID:</lable>
+    <input id='user_id' type='text' name='user_id'></input>
+  
+    <label for='user_pass'>Your Password:</lable>
+    <input id='user_pass' type='password' name='user_pass'></input>
+    <input type='submit' value='登陆'></input>
+    <input type='reset' value='清除数据'></input>
+</ul>
+
+<br>
+    Your ID:{{ urid | default:'未输入ID'}} <br/>
+    出生年份: {{ year }}<br/>
+    颜色喜好: 
+    {% for c in urfcolor %}
+        {{ c }}
+    {% empty %}
+        没有选择任何颜色
+    {% endfor %}
+    <br/>
+{% if verified %}
+    <em>您通过了验证</em>
+{% else %}
+    <em>账户或密码打错了</em>
+{% endif %}
+
+</form>
+
+
+
+
+<!-- Your ID:{{ urid | default:'未输入ID'}}<br>
+{% if verified %}
+    <em>您通过了验证</em>
+{% else %}
+    <em>账户或密码打错了</em>
+{% endif %} -->
+
+
+
+
+
+</div>
+{% endblock %}
