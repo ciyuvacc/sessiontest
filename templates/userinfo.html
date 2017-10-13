@@ -16,8 +16,10 @@
          </div>
 </div>
 <p>
-    您的姓名: {{ userinfo.username }}<br/>
-    电子邮件: {{ userinfo.email}}
+    您的姓名: {{ userinfo.user.username }}<br/>
+    电子邮件: {{ userinfo.user.email}}<br/>
+    身高: {{ userinfo.height }}<br/>
+    性别: {{ userinfo.male | yesno:"男生,女生"}}
 </p>
 </div>
 {% endblock %}

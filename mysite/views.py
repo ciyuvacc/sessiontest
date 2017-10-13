@@ -23,7 +23,8 @@ def userinfo(request):
     if request.user.is_authenticated():
         username = request.user.username
     try:
-        userinfo = User.objects.get(username=username)
+        user = User.objects.get(username=username)
+        userinfo = models.Profile.objects.get(user=user)
     except:
         pass
     template = get_template('userinfo.html')
@@ -41,22 +42,36 @@ def listing(request):
 
 
 
+@login_required(login_url='/login/')
 def posting(request):
+    if request.user.is_authenticated():
+        username = request.user.username
+        useremail = request.user.email
+    messages.get_messages(request)
+    if request.method == 'POST':
+        user = User.objects.get(username=username)
+        diary = models.Diary(user=user)
+        post_form = forms.DiaryForm(request.POST,instance=diary)
+        if post_form.is_valid():
+            messages.add_message(request,messages.INFO,'日记已存储')
+            post_form.save()
+            return HttpResponseRedirect('/')
+        else:
+            messages.add_message(request,messages.INFO,'如果要张贴信息,那么没一个字段都要填...')
+    else:
+        post_form = forms.DiaryForm()
+        messages.add_message(request,messages.INFO,'如果要张贴信息,那么没一个字段都要填...')
+
+
     template = get_template('posting.html')
-    moods = models.Mood.objects.all()
-    message = '如果要张贴信息,那么没一个字段都要填...'
-
-
-
     request_context = RequestContext(request)
     request_context.push(locals())
-
     html = template.render(request_context)
-
     return HttpResponse(html)
 
 
 
+@login_required(login_url='/login/')
 def contact(request):
     if request.method == 'POST':
         form = forms.ContactForm(request.POST)
