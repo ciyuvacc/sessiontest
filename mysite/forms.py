@@ -2,7 +2,7 @@
 from django import forms
 from django.forms import fields
 from mysite import models
-from captcha.fields import CaptchaField
+
 
 class ContactForm(forms.Form):
     CITY = [
@@ -20,16 +20,9 @@ class ContactForm(forms.Form):
     user_message = forms.CharField(label='您的意见',widget=forms.Textarea)
 
 
-class LoginForm1(forms.Form):
-    COLORS = [
-        ['红','红'],
-        ['黄','黄'],
-        ['绿','绿'],
-        ['紫','紫'],
-        ['蓝','蓝'],
-    ]
-    user_name = forms.CharField(label='您的名字',max_length=50,initial='李达')
-    user_color = forms.ChoiceField(label='幸运色',choices=COLORS)
+
+
+
 
 
 
@@ -41,20 +34,22 @@ class LoginForm(forms.Form):
 
 
 
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 
-#class PostForm(forms.ModelForm):
-#    captcha = CaptchaField()
-#    class Meta:
-#        model = models.Post
-#        fields = ['mood','nickname','message','del_pass']
-#    
-#
-#    def _init_(self,*args,**kwargs):
-#        super(PostForm,self),_init_(*args,**kwargs)
-#        self.fields['mood'].label = "现在的心情"
-#        self.fields['nickname'].label = "您的昵称"
-#        self.fields['message'].label = "心情留言"
-#        self.fields['del_pass'].label = "设置密码"
-#        self.fields['captcha'].label = "确定您不是机器人"
-#
+class DiaryForm(forms.ModelForm):
+
+    class Meta:
+        model = models.Diary
+        fields = ['budget','weight','note','ddate']
+        widgets = { 
+            'ddate': DateInput(), 
+        }
+    def _init_(self,*args,**kwargs):
+        super(DiaryForm,self),_init_(*args,**kwargs)
+        self.fields['budget'].label = "今日花费"
+        self.fields['weight'].label = "今日体重"
+        self.fields['note'].label = "心情留言"
+        self.fields['ddate'].label = "日期"
+

@@ -2,33 +2,31 @@
 from django.template.loader import get_template
 from django.template import RequestContext
 from django.http import HttpResponse,HttpResponseRedirect
+
 from mysite import models,forms
-from django.contrib import messages
-#messages.add_message(request,message.INFO,'heheheheh')
-#messages.get_messages(request)
+from django.contrib.auth.models import User
+from django.contrib import messages,auth
+from django.contrib.auth  import authenticate
+from django.contrib.auth.decorators   import login_required
 
 
 def index(request,pid=None,del_pass=None):
-    if 'username' in request.session:
-        username = request.session['username']
-        useremail = request.session['useremail']
+    if request.user.is_authenticated():
+        username = request.user.username
 
     template = get_template('index.html')
     html = template.render(locals())
     return HttpResponse(html)
 
-
+@login_required(login_url='/login/')
 def userinfo(request):
-    if 'username' in request.session:
-        username = request.session['username']
-    else:
-        return HttpResponseRedirect('/login/')
-
+    if request.user.is_authenticated():
+        username = request.user.username
     try:
-        userinfo = models.User.objects.get(name=username)
+        user = User.objects.get(username=username)
+        userinfo = models.Profile.objects.get(user=user)
     except:
         pass
-
     template = get_template('userinfo.html')
     html = template.render(locals())
     return HttpResponse(html)
@@ -44,22 +42,36 @@ def listing(request):
 
 
 
+@login_required(login_url='/login/')
 def posting(request):
+    if request.user.is_authenticated():
+        username = request.user.username
+        useremail = request.user.email
+    messages.get_messages(request)
+    if request.method == 'POST':
+        user = User.objects.get(username=username)
+        diary = models.Diary(user=user)
+        post_form = forms.DiaryForm(request.POST,instance=diary)
+        if post_form.is_valid():
+            messages.add_message(request,messages.INFO,'日记已存储')
+            post_form.save()
+            return HttpResponseRedirect('/')
+        else:
+            messages.add_message(request,messages.INFO,'如果要张贴信息,那么没一个字段都要填...')
+    else:
+        post_form = forms.DiaryForm()
+        messages.add_message(request,messages.INFO,'如果要张贴信息,那么没一个字段都要填...')
+
+
     template = get_template('posting.html')
-    moods = models.Mood.objects.all()
-    message = '如果要张贴信息,那么没一个字段都要填...'
-
-
-
     request_context = RequestContext(request)
     request_context.push(locals())
-
     html = template.render(request_context)
-
     return HttpResponse(html)
 
 
 
+@login_required(login_url='/login/')
 def contact(request):
     if request.method == 'POST':
         form = forms.ContactForm(request.POST)
@@ -115,23 +127,19 @@ def login(request):
         if login_form.is_valid():
             login_name = request.POST['username'].strip()          
             login_password = request.POST['password']
-            print login_name,login_password
-            try:
-                user = models.User.objects.get(name=login_name)
-                if user.password == login_password:
-                    request.session['username'] = user.name
-                    request.session['useremail'] = user.email
+            user = authenticate(username=login_name,password=login_password)
+            if user is not None:
+                if user.is_active:
+                    auth.login(request,user)
+                    print 'seccess'
                     messages.add_message(request,messages.SUCCESS,'成功登录了')
                     return  HttpResponseRedirect('/')
                 else:
                     messages.add_message(request,messages.WARNING,'密码错误,请检查一次')
-                    #message = '密码错误,请检查一次!'
-            except:
+            else:
                  messages.add_message(request,messages.WARNING,'找不到用户')
-                # message = '目前无法登陆'
         else:
             messages.add_message(request,messages.INFO,'请检查字段输入内容')
-           # message = "请检查字段输入内容"
     else:
         login_form = forms.LoginForm()
 
@@ -144,7 +152,8 @@ def login(request):
     return response
     
 def logout(request):
-    request.session['username']= ""
+    auth.logout(request)
+    messages.add_message(request,messages.INFO,'成功注销了')
     response = HttpResponseRedirect('/')
     return response
      
